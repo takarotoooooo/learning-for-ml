@@ -1,0 +1,9 @@
+version: '3.3'
+services:
+  jupyter:
+    build: ./docker
+    container_name: learning-for-ml
+    volumes:
+      - ./jupyter:/workspace
+    ports:
+      - 1017:8000
