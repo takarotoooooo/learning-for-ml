@@ -11,7 +11,7 @@ RUN apt-get -y upgrade && \
     apt-get install -y fonts-noto-cjk
 
 RUN pip install --upgrade pip
-RUN pip install notebook matplotlib pandas
+RUN pip install notebook matplotlib pandas scikit-learn
 
 RUN mkdir -p /root/.config/matplotlib
 ADD matplotlibrc /root/.config/matplotlib/matplotlibrc
