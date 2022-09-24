@@ -1,4 +1,4 @@
-FROM python:3.9.14
+FROM python:3.8.13
 
 RUN apt-get update
 RUN apt install -y locales && localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
@@ -11,7 +11,8 @@ RUN apt-get -y upgrade && \
     apt-get install -y fonts-noto-cjk
 
 RUN pip install --upgrade pip
-RUN pip install notebook matplotlib pandas scikit-learn
+RUN pip install notebook matplotlib seaborn pandas scikit-learn
+RUN pip install "snowflake-snowpark-python[pandas]"
 
 RUN mkdir -p /root/.config/matplotlib
 ADD matplotlibrc /root/.config/matplotlib/matplotlibrc
