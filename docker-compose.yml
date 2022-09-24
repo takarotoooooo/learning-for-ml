@@ -4,6 +4,6 @@ services:
     build: ./docker
     container_name: learning-for-ml
     volumes:
-      - ./jupyter:/workspace
+      - ./notebook:/workspace
     ports:
       - 1017:8000
