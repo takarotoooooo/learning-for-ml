@@ -11,3 +11,13 @@ $ docker-compose up -d
 ```
 http://localhost:1017
 ```
+
+## 推薦システム用データセットの準備
+https://grouplens.org/datasets/movielens/latest/
+
+
+```
+$ wget https://files.grouplens.org/datasets/movielens/ml-latest.zip -P ./datasets
+$ wget https://files.grouplens.org/datasets/movielens/ml-20m-youtube.zip -P ./datasets
+```
+
