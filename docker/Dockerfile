@@ -12,7 +12,8 @@ RUN apt-get -y upgrade && \
 
 RUN pip install --upgrade pip
 RUN pip install notebook matplotlib seaborn pandas scikit-learn \
-                streamlit streamlit-elements==0.1.*
+                streamlit streamlit-elements==0.1.* \
+                tensorflow
 RUN pip install "snowflake-snowpark-python[pandas]"
 
 RUN mkdir -p /root/.config/matplotlib
