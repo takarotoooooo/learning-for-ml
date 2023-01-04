@@ -1,5 +1,5 @@
-import streamlit as st
 from streamlit_elements import elements, mui
+
 
 class Pagination:
     def pagination(key=None, current_page=1, last_page=1, on_click=None):
