@@ -2,39 +2,68 @@ import os
 import sys
 import streamlit as st
 import numpy as np
+import pandas as pd
+from streamlit_elements import elements, mui
 from tensorflow.python.keras.models import load_model
 from pathlib import Path
 sys.path.append(os.path.dirname(Path().resolve()))
 from datasets.movie_lens import MovieLensDataset  # noqa: E402
+from components.user_id_form import user_id_form  # noqa: E402
 
 
 def init_session():
-    if 'user_id' not in st.session_state:
-        st.session_state.user_id = ''
-
     if 'movielens_dataset' not in st.session_state:
         st.session_state.movielens_dataset = MovieLensDataset()
+
+    if 'matrix_factorization_model' not in st.session_state:
+        st.session_state.matrix_factorization_model = load_model('/workspace/datasets/matrix-factorization.h5', compile=False)
 
 
 def show_data():
     st.title('MatrixFactorization')
-    st.text_input(
-        'User',
-        key='user_id',
-        placeholder='1',
-        value=st.session_state.user_id)
+    user_id_form()
 
     movielens_dataset = st.session_state.movielens_dataset
-    user = movielens_dataset.fetch_user_by_index(st.session_state.user_id)
-    st.write(user)
+    user = movielens_dataset.fetch_user_by_id(st.session_state.user_id)
+    if user is None:
+        return
 
+    st.header('推薦アイテム')
     movie_idx = movielens_dataset.movies['movieIdx'].values
-    user_idx = np.zeros(len(movie_idx))
-    user_idx = user_idx + user.index
+    user_idx = np.zeros(len(movie_idx)) + int(user.userIdx)
 
-    model = load_model('/workspace/datasets/matrix-factorization.h5', compile=False)
-    # st.write(model.predict([np.array([283214]), np.array([1, 2, 3])], verbose=1))
-    st.write(model.predict([user_idx, movie_idx], verbose=1))
+    movie_with_user_rating = pd.merge(
+        movielens_dataset.movies,
+        movielens_dataset.ratings.query('userId == @user.userId'),
+        on=['movieIdx', 'movieId'],
+        how='left'
+    )
+
+    result = pd.DataFrame(
+        st.session_state.matrix_factorization_model.predict([user_idx, movie_idx], verbose=1),
+        columns=['predictedRating']
+    )
+    result.reset_index(inplace=True)
+    result = result.rename(columns={'index': 'movieIdx'})
+    result = pd.merge(movie_with_user_rating, result, on='movieIdx', how='left').sort_values('predictedRating', ascending=False)
+
+    with elements('contents'):
+        with mui.Grid(container=True, spacing=4):
+            for movie in result.query('rating != rating')[0:100].to_dict(orient='records'):
+                with mui.Grid(item=True, xs=6):
+                    with mui.Card:
+                        mui.CardHeader(
+                            avatar=mui.Avatar(movie['movieId']),
+                            title=movie['title'])
+
+                        mui.CardMedia(component='img', image=movie['thumbnailUrl'])
+                        with mui.CardContent():
+                            mui.Typography(round(movie['ratingMean'], 2))
+                            mui.Rating(name="read-only", value=movie['ratingMean'], readOnly=True)
+                            rating = round(movie['rating'], 2)
+                            predicted_rating = round(movie['predictedRating'], 2)
+                            mui.Typography(f'rating：{rating}')
+                            mui.Typography(f'predictedRating：{predicted_rating}')
 
 
 def main():

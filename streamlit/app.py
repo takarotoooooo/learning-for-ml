@@ -3,6 +3,7 @@ import math
 from streamlit_elements import elements, mui
 from datasets.movie_lens import MovieLensDataset
 from components.pagination import Pagination
+from components.user_id_form import user_id_form
 
 
 def init_session():
@@ -28,31 +29,48 @@ def show_data():
     end_idx = st.session_state.page_number * page_per
     movies = movielens_dataset.movies.iloc[start_idx:end_idx]
 
-    Pagination.pagination(
-        key='movies-paginate-top',
-        current_page=st.session_state.page_number,
-        last_page=last_page,
-        on_click=move_to_page)
+    user_id_form()
 
-    with elements('contents'):
-        with mui.Grid(container=True, spacing=4):
-            for movie in movies.to_dict(orient='records'):
-                with mui.Grid(item=True, xs=6):
-                    with mui.Card:
-                        mui.CardHeader(
-                            avatar=mui.Avatar(movie['movieId']),
-                            title=movie['title'])
+    item_list_tab, user_info_tab = st.tabs([
+        'アイテムリスト',
+        'ユーザー情報'
+    ])
 
-                        mui.CardMedia(component='img', image=movie['thumbnailUrl'])
-                        with mui.CardContent():
-                            mui.Typography(round(movie['ratingMean'], 2))
-                            mui.Rating(name="read-only", value=movie['ratingMean'], readOnly=True)
+    with item_list_tab:
+        Pagination.pagination(
+            key='movies-paginate-top',
+            current_page=st.session_state.page_number,
+            last_page=last_page,
+            on_click=move_to_page)
 
-    Pagination.pagination(
-        key='movies-paginate-bottom',
-        current_page=st.session_state.page_number,
-        last_page=last_page,
-        on_click=move_to_page)
+        with elements('contents'):
+            with mui.Grid(container=True, spacing=4):
+                for movie in movies.to_dict(orient='records'):
+                    with mui.Grid(item=True, xs=6):
+                        with mui.Card:
+                            mui.CardHeader(
+                                avatar=mui.Avatar(movie['movieId']),
+                                title=movie['title'])
+
+                            mui.CardMedia(component='img', image=movie['thumbnailUrl'])
+                            with mui.CardContent():
+                                mui.Typography(round(movie['ratingMean'], 2))
+                                mui.Rating(name="read-only", value=movie['ratingMean'], readOnly=True)
+
+        Pagination.pagination(
+            key='movies-paginate-bottom',
+            current_page=st.session_state.page_number,
+            last_page=last_page,
+            on_click=move_to_page)
+
+    with user_info_tab:
+        user = movielens_dataset.fetch_user_by_id(st.session_state.user_id)
+        if user is None:
+            return
+        st.write(user)
+        st.write(
+            movielens_dataset.user_rating_items(user.userId).sort_values('timestamp', ascending=False)
+        )
 
 
 def main():
