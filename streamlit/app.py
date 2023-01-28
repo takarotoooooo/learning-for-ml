@@ -1,7 +1,7 @@
 import streamlit as st
 import math
 from streamlit_elements import elements, mui
-from datasets.movie_lens import MovieLensDataset
+from modules.movie_lens import MovieLensDataset
 from components.pagination import Pagination
 from components.user_id_form import user_id_form
 

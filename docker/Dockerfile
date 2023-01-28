@@ -11,10 +11,11 @@ RUN apt-get -y upgrade && \
     apt-get install -y fonts-noto-cjk
 
 RUN pip install --upgrade pip
-RUN pip install notebook matplotlib seaborn pandas scikit-learn \
-                streamlit streamlit-elements==0.1.* \
-                tensorflow
-RUN pip install "snowflake-snowpark-python[pandas]"
+RUN pip install notebook streamlit streamlit-elements==0.1.* \
+                pandas matplotlib \
+                "snowflake-snowpark-python[pandas]" \
+                scikit-learn tensorflow
+ADD builder.py /usr/local/lib/python3.8/site-packages/google/protobuf/internal/builder.py
 
 RUN mkdir -p /root/.config/matplotlib
 ADD matplotlibrc /root/.config/matplotlib/matplotlibrc

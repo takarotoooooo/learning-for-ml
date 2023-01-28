@@ -5,13 +5,13 @@ from pathlib import Path
 
 class MovieLensDataset:
     def __init__(self):
-        self.dir_path = Path(os.path.dirname(__file__))
-        self.ratings = pd.read_csv(self.dir_path.joinpath('ml-latest/ratings.csv'))
+        self.dir_path = Path(os.path.dirname(__file__)).parent
+        self.ratings = pd.read_csv(self.dir_path.joinpath('datasets/ml-latest/ratings.csv'))
         self.__init_users()
         self.__init_movies()
         self.__init_ratings()
 
-        # self.tags = pd.read_csv(self.dir_path.joinpath('ml-latest/tags.csv'))
+        # self.tags = pd.read_csv(self.dir_path.joinpath('datasets/ml-latest/tags.csv'))
 
     def __init_users(self):
         users_summary = self.ratings.groupby('userId').agg({
@@ -29,8 +29,8 @@ class MovieLensDataset:
 
     def __init_movies(self):
         self.movies = pd.merge(
-            pd.read_csv(self.dir_path.joinpath('ml-latest/movies.csv')),
-            pd.read_csv(self.dir_path.joinpath('ml-youtube.csv')),
+            pd.read_csv(self.dir_path.joinpath('datasets/ml-latest/movies.csv')),
+            pd.read_csv(self.dir_path.joinpath('datasets/ml-youtube.csv')),
             on=['movieId', 'title'],
             how='left')
         self.movies['genres'] = self.movies['genres'].apply(lambda x: x.split('|'))

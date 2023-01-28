@@ -2,22 +2,26 @@ version: '3.3'
 services:
   jupyter:
     build: ./docker
+    image: learning-for-ml:v0
     container_name: learning-for-ml_notebook
     volumes:
       - ./notebook:/workspace
       - ./datasets:/workspace/datasets
+      - ./modules:/workspace/modules
     ports:
       - 1016:8000
     env_file:
       - ./.env
   streamlit:
     build: ./docker
+    image: learning-for-ml:v0
     container_name: learning-for-ml_streamlit
     entrypoint: streamlit
     command: 'run app.py'
     volumes:
       - ./streamlit:/workspace
       - ./datasets:/workspace/datasets
+      - ./modules:/workspace/modules
     ports:
       - 1017:8501
     env_file:
