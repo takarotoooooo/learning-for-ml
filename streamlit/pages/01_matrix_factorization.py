@@ -4,10 +4,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from streamlit_elements import elements, mui
-from tensorflow.python.keras.models import load_model
 from pathlib import Path
 sys.path.append(os.path.dirname(Path().resolve()))
-from datasets.movie_lens import MovieLensDataset  # noqa: E402
+from modules.movie_lens import MovieLensDataset  # noqa: E402
+from modules.matrix_factorization import MatrixFactorization  # noqa: E402
 from components.user_id_form import user_id_form  # noqa: E402
 
 
@@ -16,7 +16,7 @@ def init_session():
         st.session_state.movielens_dataset = MovieLensDataset()
 
     if 'matrix_factorization_model' not in st.session_state:
-        st.session_state.matrix_factorization_model = load_model('/workspace/datasets/matrix-factorization.h5', compile=False)
+        st.session_state.matrix_factorization_model = MatrixFactorization().load_model('/workspace/datasets/matrix-factorization.h5')
 
 
 def show_data():
