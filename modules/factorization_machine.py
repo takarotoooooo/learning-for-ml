@@ -2,7 +2,6 @@ import json
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from functools import reduce
 from pathlib import PosixPath
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
@@ -225,7 +224,7 @@ class FactorizationMachinesPredictor(FactorizationMachinesModel):
         )
 
     def call(self, inputs):
-        super().call(inputs=inputs)
+        return super().call(inputs=inputs)
 
 
 class FactorizationMachinesBinalyClassifier(FactorizationMachinesModel):
@@ -259,7 +258,7 @@ class FactorizationMachines():
     model : FactorizationMachinesModel
         FactorizationMachinesモデル
     fields_map : dict
-        学習・推論に持ちいるデータのフィールド定義
+        学習・推論に用いるデータのフィールド定義
     """
     def __init__(self):
         self.model = None
@@ -351,8 +350,12 @@ class FactorizationMachines():
             重複を排除したカテゴリのリスト
         """
         if type(series.values[0]) == list:
-            values = series[series.apply(lambda x: len(x) > 0)].values
-            vocabulary = list(set(reduce(lambda a, b: np.concatenate([np.ravel(a), np.ravel(b)]), values)))
+            d = []
+            for v in series.values:
+                for _v in v:
+                    d.append(_v)
+
+            vocabulary = list(set(d))
         else:
             vocabulary = list(series.unique())
 
@@ -375,6 +378,8 @@ class FactorizationMachines():
             max_values_num = field_info.get('max_values_num', 1)
             value_is_continuous = True
             vocabulary = []
+
+            print(f'Creating {column_name} voc')
             if value_type == 'categorical':
                 value_is_continuous = False
                 vocabulary = self.__generate_vocabulary(series=datasets[column_name])
@@ -385,6 +390,7 @@ class FactorizationMachines():
                 vocabulary=vocabulary,
                 multi_settable_values_num=max_values_num
             )
+            print(f'{column_name} voc size is {len(self.fields_map[column_name].vocabulary)}')
 
     def train_model(
             self,
@@ -535,3 +541,57 @@ class FactorizationMachines():
             datasets=datasets,
             explanatory_variable_columns=list(self.fields_map.keys()))
         return self.model.predict(x, verbose=0)
+
+    def fetch_interaction_embeddings(self, column_name: str) -> np.array:
+        """
+        カラムに対応する潜在因子行列を返却する
+
+        Parameters
+        ----------
+        column_name : str
+            カラム名
+
+        Returns
+        ----------
+        matix : numpy.array
+            潜在因子行列
+        """
+        return self.model.interaction_layer.embeddings_layer.field_embeddings_layers[column_name].weights[0].numpy()
+
+    def fetch_interaction_embedding(self, column_name: str, value: str) -> np.array:
+        """
+        カラムの値に対する潜在因子ベクトルを返却する
+
+        Parameters
+        ----------
+        column_name : str
+            カラム名
+        value : str
+            カラムの値
+
+        Returns
+        ----------
+        vector : numpy.array
+            潜在因子ベクトル
+        """
+        target_index = self.fields_map[column_name].fetch_index(value)
+        return self.fetch_interaction_embeddings(column_name=column_name)[target_index]
+
+    def fetch_linear_param(self, column_name: str, value: str) -> np.array:
+        """
+        カラムの値に対する回帰係数を返却する
+
+        Parameters
+        ----------
+        column_name : str
+            カラム名
+        value : str
+            カラムの値
+
+        Returns
+        ----------
+        param : float
+            回帰係数
+        """
+        target_index = self.fields_map[column_name].fetch_index(value)
+        return self.model.linear_layer.embeddings_layer.field_embeddings_layers[column_name].weights[0].numpy()[target_index]
