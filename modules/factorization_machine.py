@@ -379,7 +379,6 @@ class FactorizationMachines():
             value_is_continuous = True
             vocabulary = []
 
-            print(f'Creating {column_name} voc')
             if value_type == 'categorical':
                 value_is_continuous = False
                 vocabulary = self.__generate_vocabulary(series=datasets[column_name])
@@ -390,7 +389,6 @@ class FactorizationMachines():
                 vocabulary=vocabulary,
                 multi_settable_values_num=max_values_num
             )
-            print(f'{column_name} voc size is {len(self.fields_map[column_name].vocabulary)}')
 
     def train_model(
             self,
