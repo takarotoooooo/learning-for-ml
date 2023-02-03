@@ -1,56 +1,6 @@
 import tensorflow as tf
 
 
-class MatrixFactorizationModel(tf.keras.Model):
-    """
-    MatrixFactorizationモデル
-
-    Attributes
-    ----------
-    user_embeddings_layer : tf.keras.layers.Embedding
-        ユーザーの潜在因子行列層
-    item_embeddings_layer : tf.keras.layers.Embedding
-        アイテムの潜在因子行列層
-    """
-
-    def __init__(self, user_size: int, item_size: int, embeddings_dim: int = 5):
-        super(MatrixFactorizationModel, self).__init__()
-        self.user_embeddings_layer = tf.keras.layers.Embedding(
-            input_dim=user_size,
-            output_dim=self.embeddings_dim,
-            mask_zero=False,
-            name='user_embeddings_layer',
-            embeddings_initializer=tf.keras.initializers.RandomNormal(stddev=0.01, seed=None))
-        self.item_embeddings_layer = tf.keras.layers.Embedding(
-            input_dim=item_size,
-            output_dim=self.embeddings_dim,
-            mask_zero=False,
-            name='item_embeddings_layer',
-            embeddings_initializer=tf.keras.initializers.RandomNormal(stddev=0.01, seed=None))
-        self.user_bias_layer = tf.keras.layers.Embedding(
-            input_dim=user_size,
-            output_dim=1,
-            mask_zero=False,
-            name='user_bias_layer',
-            embeddings_initializer=tf.keras.initializers.RandomNormal(stddev=0.01, seed=None))
-        self.item_bias_layer = tf.keras.layers.Embedding(
-            input_dim=item_size,
-            output_dim=1,
-            mask_zero=False,
-            name='item_bias_layer',
-            embeddings_initializer=tf.keras.initializers.RandomNormal(stddev=0.01, seed=None))
-
-    def call(self, inputs):
-        user_embeddings = self.user_embeddings_layer(inputs[0])
-        item_embeddings = self.item_embeddings_layer(inputs[1])
-        user_bias = self.user_bias_layer(inputs[0])
-        item_bias = self.item_bias_layer(inputs[1])
-
-        x = tf.keras.layers.Dot(axes=2)([user_embeddings, item_embeddings])
-        x = tf.keras.layers.Add()([x, user_bias, item_bias])
-        return tf.keras.layers.Flatten()(x)
-
-
 class MatrixFactorization():
     def __init__(self):
         pass
